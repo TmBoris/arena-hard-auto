@@ -26,6 +26,7 @@ from utils import (
     chat_completion_mistral,
     http_completion_gemini,
     chat_completion_cohere,
+    chat_completion_giga,
     reorg_answer_file,
     OPENAI_MODEL_LIST,
     temperature_config,
@@ -76,6 +77,11 @@ def get_answer(
                                                       api_dict=api_dict)
             elif api_type == "cohere":
                 output = chat_completion_cohere(model=endpoint_info["model_name"],
+                                                messages=conv,
+                                                temperature=temperature,
+                                                max_tokens=max_tokens)
+            elif api_type == "giga":
+                output = chat_completion_giga(model=endpoint_info["model_name"],
                                                 messages=conv,
                                                 temperature=temperature,
                                                 max_tokens=max_tokens)

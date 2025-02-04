@@ -5,13 +5,19 @@ import yaml
 import random
 import requests
 
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from glob import glob
+from threading import Lock
+
+if TYPE_CHECKING:
+    from giga import GigaChat
 
 # API setting constants
 API_MAX_RETRY = 16
 API_RETRY_SLEEP = 10
 API_ERROR_OUTPUT = "$ERROR$"
+CLIENT: Optional["GigaChat"] = None
+LOCK = Lock()
 
 
 OPENAI_MODEL_LIST = (
@@ -124,6 +130,36 @@ def chat_completion_openai(model, messages, temperature, max_tokens, api_dict=No
         except KeyError:
             print(type(e), e)
             break
+    
+    return output
+
+
+def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None):
+    global CLIENT
+    
+    from giga import GigaChat
+    
+    with LOCK:
+        if CLIENT is None:
+            CLIENT = GigaChat()
+
+    output = API_ERROR_OUTPUT
+    for _ in range(API_MAX_RETRY):
+        try:
+            completion = CLIENT.chat(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens
+                )
+            output = completion['choices'][0]['message']['content']
+            break
+        except KeyError:
+            print(type(e), e)
+            break
+        except Exception as e:
+            print(type(e), e)
+            time.sleep(API_RETRY_SLEEP)
     
     return output
 
