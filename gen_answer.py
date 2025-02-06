@@ -118,12 +118,12 @@ def get_answer(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        "--setting-file", type=str, default="config/gen_answer_config.yaml"
+        "--setting-file", type=str, default="config/endpoint.yaml"
     )
     parser.add_argument(
-        "--endpoint-file", type=str, default="config/api_config.yaml"
+        "--endpoint-file", type=str, default="config/endpoint.yaml"
     )
     args = parser.parse_args()
 

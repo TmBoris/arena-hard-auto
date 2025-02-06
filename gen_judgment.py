@@ -125,9 +125,9 @@ def judgment(**args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--setting-file", type=str, default="config/judge_config.yaml")
-    parser.add_argument("--endpoint-file", type=str, default="config/api_config.yaml")
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--setting-file", type=str, default="config/judge.yaml")
+    parser.add_argument("--endpoint-file", type=str, default="config/endpoint.yaml")
     args = parser.parse_args()
     print(args)
 
