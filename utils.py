@@ -103,9 +103,11 @@ def make_config(config_file: str) -> dict:
 def chat_completion_openai(model, messages, temperature, max_tokens, api_dict=None):
     import openai
     if api_dict:
+        import httpx
         client = openai.OpenAI(
             base_url=api_dict["api_base"],
             api_key=api_dict["api_key"],
+            http_client=httpx.Client(verify=False),
         )
     else:
         client = openai.OpenAI()
