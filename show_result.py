@@ -235,18 +235,10 @@ if __name__ == "__main__":
     for category in args.category:
         assert category in battles.category.unique(), f"Invalid category: {category}"
         
-        battles = battles[battles.category == category].reset_index(drop=True)
+        subset = battles[battles.category == category].reset_index(drop=True)
         
         if args.control_features:
-            print(f"INFO: Control features: {args.control_features}")
-            
-            print_leaderboard_with_style_features(
-                battles, 
-                args.benchmark, 
-                category,
-                args.control_features
-            )
-                
+            print_leaderboard_with_style_features(subset, args.benchmark, category, args.control_features)
         else:
-            print_leaderboard(battles, category)
+            print_leaderboard(subset, category)
         

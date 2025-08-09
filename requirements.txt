@@ -8,3 +8,5 @@ gradio==5.25.2
 plotly
 scikit-learn
 boto3
+torch
+giga @ git+https://git@gitlab.com/ru.ush/lightweight-gigachat.git@module
