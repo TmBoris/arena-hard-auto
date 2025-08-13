@@ -4,8 +4,9 @@ numpy
 pandas
 shortuuid
 tqdm
-gradio==3.40.0
-httpx==0.25.2
+gradio==5.25.2
 plotly
 scikit-learn
+boto3
+torch
 giga @ git+https://git@gitlab.com/ru.ush/lightweight-gigachat.git@module
