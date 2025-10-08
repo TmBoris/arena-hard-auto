@@ -216,7 +216,7 @@ def chat_completion_deepseek_reasoner(messages, api_dict, **kwargs):
         "model": "deepseek-reasoner",
         "stream": False,
     }
-    req_data = json.dumps(req_body).encode("utf-8")
+    req_data = json.dumps(req_body, ensure_ascii=False).encode("utf-8")
     
     output = API_ERROR_OUTPUT
     for i in range(API_MAX_RETRY):
@@ -261,7 +261,7 @@ def chat_completion_deepseek(messages, max_tokens, api_dict, **kwargs):
         "stream": False,
         "max_tokens": max_tokens,
     }
-    req_data = json.dumps(req_body).encode("utf-8")
+    req_data = json.dumps(req_body, ensure_ascii=False).encode("utf-8")
     
     output = API_ERROR_OUTPUT
     for i in range(API_MAX_RETRY):
@@ -926,7 +926,7 @@ def chat_completion_aws_bedrock_claude(messages, api_dict=None, aws_region="us-w
 
             # Call Bedrock API
             response = bedrock_rt_client.invoke_model(
-                body=json.dumps(prompt_json),
+                body=json.dumps(prompt_json, ensure_ascii=False),
                 modelId=model,
                 accept='application/json',
                 contentType='application/json'
@@ -995,7 +995,7 @@ def chat_completion_aws_bedrock_mistral(messages, api_dict=None, aws_region="us-
 
             # Call Bedrock API
             response = bedrock_rt_client.invoke_model(
-                body=json.dumps(body),
+                body=json.dumps(body, ensure_ascii=False),
                 modelId=model,
                 accept='application/json',
                 contentType='application/json'
@@ -1137,7 +1137,7 @@ def chat_completion_aws_bedrock_nova( messages, api_dict=None, aws_region="us-we
             # Prepare request body
             model_kwargs = {"messages": messages,
                             "inferenceConfig": inferenceConfig,}
-            body = json.dumps(model_kwargs)
+            body = json.dumps(model_kwargs, ensure_ascii=False)
 
             # Call Bedrock API
             response = bedrock_rt_client.invoke_model(
@@ -1213,7 +1213,7 @@ def chat_completion_aws_bedrock_deepseek(messages, api_dict=None, aws_region="us
                                 "max_tokens": max_tokens,
                                 "temperature": temperature,
                                 "top_p": 0.9,
-                            })
+                            }, ensure_ascii=False)
 
 
             # Call Bedrock API

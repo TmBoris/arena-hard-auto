@@ -32,7 +32,7 @@ def create_llama3_body(messages, max_gen_len=2048, temperature=0.0, top_p=0.9, t
         "max_gen_len": max_gen_len,
         "temperature": temperature,
         "top_p": top_p,
-    })
+    }, ensure_ascii=False)
 
 
 def extract_innermost_text(content):

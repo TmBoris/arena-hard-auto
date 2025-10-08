@@ -64,7 +64,7 @@ def _sglang_server_submit(
         "input_ids": input_ids,
         "sampling_params": sampling_params,
     }
-    req_data = json.dumps(req_body).encode("utf-8")
+    req_data = json.dumps(req_body, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
         f"http://{_host}:{_port}/generate",
         headers=req_headers,

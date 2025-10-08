@@ -139,7 +139,7 @@ def main():
 
     with open(args.output_file, "w") as f:
         for question in arena_hard_questions:
-            f.write(json.dumps(question) + "\n")
+            f.write(json.dumps(question, ensure_ascii=False) + "\n")
     
     print(f"Filtered {len(filtered_prompts)} prompts out of {len(conversations)} total.")
     print(f"Results saved to {args.output_file}")

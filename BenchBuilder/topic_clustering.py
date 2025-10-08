@@ -61,7 +61,7 @@ def run(args):
 
         # save convs to file
         with open(f"{args.output_dir}/post_process_convs.json", "w") as f:
-            json.dump(all_convs_new, f, indent=4)
+            json.dump(all_convs_new, f, indent=4, ensure_ascii=False)
 
         batch_size = 2000
         embeddings = []
@@ -114,7 +114,7 @@ def run(args):
 
     new_topics = topic_model.reduce_outliers(convs, topics)
     with open(f"{args.output_dir}/conv_topics.json", "w") as f:
-        json.dump(new_topics, f, default=str)
+        json.dump(new_topics, f, default=str, ensure_ascii=False)
 
     topic_model.save(f"{args.output_dir}/model_dir", serialization="pytorch", save_ctfidf=True, save_embedding_model=embedding_model)
     
