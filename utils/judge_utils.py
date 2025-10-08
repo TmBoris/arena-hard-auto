@@ -25,4 +25,8 @@ JUDGE_SETTINGS = {
         "baseline": "gpt-4-0613",
         "system_prompt": OG_ARENA_HARD_PROMPT,
     },
+    "validator-sbs-pollux": {
+        "baseline": "gpt-4-0613",
+        "system_prompt": OG_ARENA_HARD_PROMPT,
+    },
 }
