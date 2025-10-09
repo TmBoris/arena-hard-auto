@@ -29,4 +29,8 @@ JUDGE_SETTINGS = {
         "baseline": "gpt-4-0613",
         "system_prompt": OG_ARENA_HARD_PROMPT,
     },
+    "arena-hard-logs-v3": {
+        "baseline": "gpt-4-0613",
+        "system_prompt": OG_ARENA_HARD_PROMPT,
+    },
 }
