@@ -1249,20 +1249,49 @@ def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None
     
     with LOCK:
         if CLIENT is None:
-            CLIENT = GigaChat()
+            # Load additional headers from environment variable if present
+            headers = None
+            additional_headers_str = os.environ.get("GIGA_ADDITIONAL_HEADERS", "")
+            if additional_headers_str:
+                try:
+                    headers = json.loads(additional_headers_str)
+                except (json.JSONDecodeError, ValueError) as e:
+                    print(f"Warning: Could not parse GIGA_ADDITIONAL_HEADERS: {e}")
+                    headers = None
+            
+            CLIENT = GigaChat(headers=headers if headers else None)
+    
+    # Process image_path in messages - upload images and add to attachments
+    processed_messages = []
+    for message in messages:
+        processed_message = message.copy()
+        
+        # Handle image_path if present
+        if "image_path" in processed_message:
+            image_path = processed_message.pop("image_path")
+            if image_path and os.path.exists(image_path):
+                try:
+                    file_id = CLIENT.upload_file(file_path=image_path, purpose="general")
+                    if "attachments" not in processed_message:
+                        processed_message["attachments"] = []
+                    processed_message["attachments"].append(file_id)
+                except Exception as e:
+                    print(f"Error uploading image {image_path}: {e}")
+        
+        processed_messages.append(processed_message)
 
     output = API_ERROR_OUTPUT
     for _ in range(API_MAX_RETRY):
         try:
             completion = CLIENT.chat(
                 model=model,
-                messages=messages,
+                messages=processed_messages,
                 temperature=temperature,
                 max_tokens=max_tokens
                 )
             output = {"answer": completion['choices'][0]['message']['content']}
             break
-        except KeyError:
+        except KeyError as e:
             print(type(e), e)
             break
         except Exception as e:

@@ -52,6 +52,10 @@ def pairwise_judgment(question, baseline, answer, reference, configs, settings):
             "content": user_prompt,
         }
     ]
+    
+    # Add image_path to user message if present (will be processed in chat_completion_giga)
+    if "image_path" in question and question["image_path"]:
+        messages[-1]["image_path"] = question["image_path"]
 
     # build arguments for api completions
     kwargs = settings | {

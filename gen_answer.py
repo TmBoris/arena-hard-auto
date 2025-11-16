@@ -29,8 +29,22 @@ def get_answer(
     messages = []
     if "sys_prompt" in settings:
         messages.append({"role": "system", "content": settings["sys_prompt"]})
-        
-    messages.append({"role": "user", "content": question["prompt"]})
+    
+    # Build user message with optional image_path
+    user_message = {"role": "user"}
+    prompt = question.get("prompt", "").strip()
+    if prompt:
+        user_message["content"] = prompt
+    
+    # Add image_path to message if present (will be processed in chat_completion_giga)
+    if "image_path" in question and question["image_path"]:
+        user_message["image_path"] = question["image_path"]
+    
+    # Assert that message has either content or image_path
+    assert "content" in user_message or "image_path" in user_message, \
+        f"Question {question.get('uid', 'unknown')} must have either non-empty prompt or image_path"
+    
+    messages.append(user_message)
 
     # retrieve the api completion function from register
     api_completion_func = registered_api_completion[settings["api_type"]]
@@ -50,6 +64,8 @@ def get_answer(
     messages.append({"role": "assistant", "content": output})
 
     # Dump answers
+    # Extract model name from answer_file path (answer_file format: "data/{bench_name}/model_answer/{model}.jsonl")
+    model = os.path.basename(answer_file).replace(".jsonl", "")
     ans = {
         "uid": question["uid"],
         "ans_id": shortuuid.uuid(),
@@ -83,6 +99,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--endpoint-file", type=str, default="config/endpoint.yaml"
     )
+    parser.add_argument(
+        "--max-samples", type=int, default=None, help="Maximum number of samples to process (limits to first N samples)"
+    )
     args = parser.parse_args()
 
     config = make_config(args.config_file)
@@ -98,6 +117,11 @@ if __name__ == "__main__":
 
         question_file = os.path.join("data", config["bench_name"], "question.jsonl")
         questions = load_questions(question_file)
+        
+        # Limit to first N samples if --max-samples is specified
+        if args.max_samples is not None:
+            questions = questions[:args.max_samples]
+            print(f"Limited to first {args.max_samples} samples")
 
         answer_file = os.path.join("data", config["bench_name"], "model_answer", f"{model}.jsonl")
         print(f"Output to {answer_file}")
@@ -110,9 +134,14 @@ if __name__ == "__main__":
         if 'local_engine' in endpoint_settings and endpoint_settings['local_engine']:
             local_completion_func = registered_engine_completion[endpoint_settings['api_type']]
             
+            # Apply max_samples limit for local_engine too
+            batch_context = questions
+            if args.max_samples is not None:
+                batch_context = questions[:args.max_samples]
+            
             kwargs = endpoint_settings | {
                 "answer_file": answer_file,
-                "batch_context": questions,
+                "batch_context": batch_context,
             }
             local_completion_func(**kwargs)
             
