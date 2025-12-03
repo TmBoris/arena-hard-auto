@@ -30,19 +30,19 @@ def get_answer(
     if "sys_prompt" in settings:
         messages.append({"role": "system", "content": settings["sys_prompt"]})
     
-    # Build user message with optional image_path
     user_message = {"role": "user"}
     prompt = question.get("prompt", "").strip()
     if prompt:
         user_message["content"] = prompt
     
-    # Add image_path to message if present (will be processed in chat_completion_giga)
-    if "image_path" in question and question["image_path"]:
-        user_message["image_path"] = question["image_path"]
+    if "image_url" in question and question["image_url"]:
+        user_message["image_url"] = question["image_url"]
     
-    # Assert that message has either content or image_path
-    assert "content" in user_message or "image_path" in user_message, \
-        f"Question {question.get('uid', 'unknown')} must have either non-empty prompt or image_path"
+    if "image_url" in user_message and "content" not in user_message:
+        user_message["content"] = "Опиши изображение и реши задачу по картинке."
+    
+    assert "content" in user_message or "image_url" in user_message, \
+        f"Question {question.get('uid', 'unknown')} must have either non-empty prompt or image_url"
     
     messages.append(user_message)
 

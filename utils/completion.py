@@ -133,6 +133,28 @@ def chat_completion_openai(model, messages, temperature, max_tokens, api_dict=No
         )
     else:
         client = openai.OpenAI()
+
+    processed_messages = []
+    for msg in messages:
+        m = msg.copy()
+        image_url = m.pop("image_url", None)
+        if image_url:
+            # Normalize existing content to list-of-parts format
+            content = m.get("content", "")
+            if isinstance(content, list):
+                parts = content
+            else:
+                parts = []
+                if content != "":
+                    parts.append({"type": "text", "text": content})
+            parts.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": image_url},
+                }
+            )
+            m["content"] = parts
+        processed_messages.append(m)
         
     if api_dict and "model_name" in api_dict:
         model = api_dict["model_name"]
@@ -142,7 +164,7 @@ def chat_completion_openai(model, messages, temperature, max_tokens, api_dict=No
         try:
             completion = client.chat.completions.create(
                 model=model,
-                messages=messages,
+                messages=processed_messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 )
@@ -154,7 +176,7 @@ def chat_completion_openai(model, messages, temperature, max_tokens, api_dict=No
             print(type(e), e)
             time.sleep(API_RETRY_SLEEP)
         except openai.BadRequestError as e:
-            print(messages)
+            print(processed_messages)
             print(type(e), e)
         except KeyError:
             print(type(e), e)
@@ -1261,22 +1283,16 @@ def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None
             
             CLIENT = GigaChat(headers=headers if headers else None)
     
-    # Process image_path in messages - upload images and add to attachments
     processed_messages = []
     for message in messages:
         processed_message = message.copy()
         
-        # Handle image_path if present
-        if "image_path" in processed_message:
-            image_path = processed_message.pop("image_path")
-            if image_path and os.path.exists(image_path):
-                try:
-                    file_id = CLIENT.upload_file(file_path=image_path, purpose="general")
-                    if "attachments" not in processed_message:
-                        processed_message["attachments"] = []
-                    processed_message["attachments"].append(file_id)
-                except Exception as e:
-                    print(f"Error uploading image {image_path}: {e}")
+        if "image_url" in processed_message:
+            image_url = processed_message.pop("image_url")
+            if image_url:
+                if "attachments" not in processed_message:
+                    processed_message["attachments"] = []
+                processed_message["attachments"].append(image_url)
         
         processed_messages.append(processed_message)
 
