@@ -140,20 +140,11 @@ def chat_completion_openai(model, messages, temperature, max_tokens, api_dict=No
         m = msg.copy()
         image_url = m.pop("image_url", None)
         if image_url:
-            # Normalize existing content to list-of-parts format
             content = m.get("content", "")
-            if isinstance(content, list):
-                parts = content
-            else:
-                parts = []
-                if content != "":
-                    parts.append({"type": "text", "text": content})
-            parts.append(
-                {
-                    "type": "image_url",
-                    "image_url": {"url": image_url},
-                }
+            parts = content if isinstance(content, list) else (
+                [{"type": "text", "text": content}] if content else []
             )
+            parts.append({"type": "image_url", "image_url": {"url": image_url}})
             m["content"] = parts
         processed_messages.append(m)
         
