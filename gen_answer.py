@@ -38,6 +38,9 @@ def get_answer(
     if "image_url" in question and question["image_url"]:
         user_message["image_url"] = question["image_url"]
     
+    if "image_path" in question and question["image_path"]:
+        user_message["image_path"] = question["image_path"]
+    
     if "image_url" in user_message and "content" not in user_message:
         user_message["content"] = "Опиши изображение и реши задачу по картинке."
     
