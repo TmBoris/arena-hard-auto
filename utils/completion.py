@@ -1262,17 +1262,7 @@ def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None
     
     with LOCK:
         if CLIENT is None:
-            # Load additional headers from environment variable if present
-            headers = None
-            additional_headers_str = os.environ.get("GIGA_ADDITIONAL_HEADERS", "")
-            if additional_headers_str:
-                try:
-                    headers = json.loads(additional_headers_str)
-                except (json.JSONDecodeError, ValueError) as e:
-                    print(f"Warning: Could not parse GIGA_ADDITIONAL_HEADERS: {e}")
-                    headers = None
-            
-            CLIENT = GigaChat(headers=headers if headers else None)
+            CLIENT = GigaChat()
     
     processed_messages = []
     for message in messages:
