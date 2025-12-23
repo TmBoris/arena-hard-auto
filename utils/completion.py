@@ -1264,12 +1264,11 @@ def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None
     processed_messages = []
     for message in messages:
         processed_message = message.copy()
-        
-        assert "image_path" in processed_message, "'image_path' must be present in processed_message"
-        image_path = processed_message.pop("image_path", None)
-        
-        processed_message["attachments"] = []
-        processed_message["attachments"].append(image_path)
+
+        if "image_path" in processed_message:     
+            image_path = processed_message.pop("image_path", None)
+            processed_message["files"] = []
+            processed_message["files"].append({"content": image_path})
         
         processed_messages.append(processed_message)
 
