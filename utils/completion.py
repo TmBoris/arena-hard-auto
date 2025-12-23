@@ -12,8 +12,7 @@ import boto3
 from glob import glob
 from threading import Lock
 
-if TYPE_CHECKING:
-    from giga import GigaChat
+from giga import GigaChat
 from tqdm import tqdm
 
 from utils.bedrock_utils import create_llama3_body, create_nova_messages, extract_answer
