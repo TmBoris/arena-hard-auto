@@ -5,8 +5,6 @@ import yaml
 import random
 import shortuuid
 import pandas as pd
-import tempfile
-
 import requests
 from typing import Optional, TYPE_CHECKING
 import boto3
@@ -1256,59 +1254,6 @@ def chat_completion_aws_bedrock_deepseek(messages, api_dict=None, aws_region="us
     return output
 
 
-def _process_image_url_for_giga(image_url: str, client) -> str:
-    if not image_url:
-        return image_url
-    
-    if isinstance(image_url, str) and image_url.startswith(('http://', 'https://')):
-        tmp_path = None
-        try:
-            suffix = os.path.splitext(image_url)[1] or '.jpg'
-            
-            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
-                tmp_path = tmp_file.name
-            
-            response = requests.get(image_url, timeout=30)
-            response.raise_for_status()
-            
-            with open(tmp_path, 'wb') as f:
-                f.write(response.content)
-            
-            # Проверяем, что файл существует и имеет содержимое перед загрузкой
-            if not os.path.exists(tmp_path):
-                raise ValueError(f"Temporary file {tmp_path} does not exist")
-            
-            file_size = os.path.getsize(tmp_path)
-            if file_size == 0:
-                raise ValueError(f"Temporary file {tmp_path} is empty")
-            
-            # Загружаем файл через клиент
-            file_id = client.upload_file(tmp_path)
-            
-            if not file_id:
-                raise ValueError(f"upload_file() returned empty result")
-            
-            return file_id
-                    
-        except requests.RequestException as e:
-            print(f"Warning: Failed to download image from URL {image_url}: {e}")
-            return image_url
-        except Exception as e:
-            print(f"Warning: Failed to process image URL {image_url}: {type(e).__name__}: {e}")
-            import traceback
-            traceback.print_exc()
-            return image_url
-        finally:
-            # Удаляем временный файл после загрузки
-            if tmp_path and os.path.exists(tmp_path):
-                try:
-                    os.unlink(tmp_path)
-                except OSError:
-                    pass
-    
-    return image_url
-
-
 @register_api("giga")
 def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None, **kwargs):
     global CLIENT
@@ -1333,13 +1278,11 @@ def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None
     for message in messages:
         processed_message = message.copy()
         
-        if "image_url" in processed_message:
-            image_url = processed_message.pop("image_url")
-            if image_url:
-                if "attachments" not in processed_message:
-                    processed_message["attachments"] = []
-                processed_attachment = _process_image_url_for_giga(image_url, CLIENT)
-                processed_message["attachments"].append(processed_attachment)
+        assert "image_path" in processed_message, "'image_path' must be present in processed_message"
+        image_path = processed_message.pop("image_path", None)
+        
+        processed_message["attachments"] = []
+        processed_message["attachments"].append(image_path)
         
         processed_messages.append(processed_message)
 
