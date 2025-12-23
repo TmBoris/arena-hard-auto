@@ -1258,8 +1258,6 @@ def chat_completion_aws_bedrock_deepseek(messages, api_dict=None, aws_region="us
 def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None, **kwargs):
     global CLIENT
     
-    from giga import GigaChat
-    
     with LOCK:
         if CLIENT is None:
             CLIENT = GigaChat()
