@@ -55,6 +55,9 @@ def pairwise_judgment(question, baseline, answer, reference, configs, settings):
     
     if "image_url" in question and question["image_url"]:
         messages[-1]["image_url"] = question["image_url"]
+    
+    if "image_path" in question and question["image_path"]:
+        messages[-1]["image_path"] = question["image_path"]
 
     # build arguments for api completions
     kwargs = settings | {
