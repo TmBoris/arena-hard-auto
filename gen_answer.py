@@ -42,7 +42,7 @@ def get_answer(
         user_message["image_path"] = question["image_path"]
     
     if "image_url" in user_message and "content" not in user_message:
-        user_message["content"] = "Опиши изображение и реши задачу по картинке."
+        user_message["content"] = "Solve the problem based on the provided image"
     
     assert "content" in user_message or "image_url" in user_message, \
         f"Question {question.get('uid', 'unknown')} must have either non-empty prompt or image_url"
