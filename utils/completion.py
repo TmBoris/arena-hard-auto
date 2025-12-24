@@ -5,7 +5,6 @@ import yaml
 import random
 import shortuuid
 import pandas as pd
-
 import requests
 from typing import Optional, TYPE_CHECKING
 import boto3
@@ -13,8 +12,7 @@ import boto3
 from glob import glob
 from threading import Lock
 
-if TYPE_CHECKING:
-    from giga import GigaChat
+from giga import GigaChat
 from tqdm import tqdm
 
 from utils.bedrock_utils import create_llama3_body, create_nova_messages, extract_answer
@@ -133,6 +131,19 @@ def chat_completion_openai(model, messages, temperature, max_tokens, api_dict=No
         )
     else:
         client = openai.OpenAI()
+
+    processed_messages = []
+    for msg in messages:
+        m = msg.copy()
+        image_url = m.pop("image_url", None)
+        if image_url:
+            content = m.get("content", "")
+            parts = content if isinstance(content, list) else (
+                [{"type": "text", "text": content}] if content else []
+            )
+            parts.append({"type": "image_url", "image_url": {"url": image_url}})
+            m["content"] = parts
+        processed_messages.append(m)
         
     if api_dict and "model_name" in api_dict:
         model = api_dict["model_name"]
@@ -142,7 +153,7 @@ def chat_completion_openai(model, messages, temperature, max_tokens, api_dict=No
         try:
             completion = client.chat.completions.create(
                 model=model,
-                messages=messages,
+                messages=processed_messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 )
@@ -154,7 +165,7 @@ def chat_completion_openai(model, messages, temperature, max_tokens, api_dict=No
             print(type(e), e)
             time.sleep(API_RETRY_SLEEP)
         except openai.BadRequestError as e:
-            print(messages)
+            print(processed_messages)
             print(type(e), e)
         except KeyError:
             print(type(e), e)
@@ -1241,28 +1252,38 @@ def chat_completion_aws_bedrock_deepseek(messages, api_dict=None, aws_region="us
 
     return output
 
+
 @register_api("giga")
 def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None, **kwargs):
     global CLIENT
     
-    from giga import GigaChat
-    
     with LOCK:
         if CLIENT is None:
             CLIENT = GigaChat()
+    
+    processed_messages = []
+    for message in messages:
+        processed_message = message.copy()
+
+        if "image_path" in processed_message:     
+            image_path = processed_message.pop("image_path", None)
+            processed_message["files"] = []
+            processed_message["files"].append({"content": image_path})
+        
+        processed_messages.append(processed_message)
 
     output = API_ERROR_OUTPUT
     for _ in range(API_MAX_RETRY):
         try:
             completion = CLIENT.chat(
                 model=model,
-                messages=messages,
+                messages=processed_messages,
                 temperature=temperature,
                 max_tokens=max_tokens
                 )
             output = {"answer": completion['choices'][0]['message']['content']}
             break
-        except KeyError:
+        except KeyError as e:
             print(type(e), e)
             break
         except Exception as e:

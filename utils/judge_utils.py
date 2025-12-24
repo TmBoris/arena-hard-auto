@@ -33,4 +33,8 @@ JUDGE_SETTINGS = {
         "baseline": "gpt-4-0613",
         "system_prompt": OG_ARENA_HARD_PROMPT,
     },
+    "vision": {
+        "baseline": "gigachat-2-max",
+        "system_prompt": OG_ARENA_HARD_PROMPT,
+    },
 }

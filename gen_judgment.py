@@ -52,6 +52,14 @@ def pairwise_judgment(question, baseline, answer, reference, configs, settings):
             "content": user_prompt,
         }
     ]
+    
+    if "image_url" in question and question["image_url"]:
+        assert len(messages) > 1, messages
+        assert messages[-1]["role"] == "user", messages
+        messages[-1]["image_url"] = question["image_url"]
+    
+    if "image_path" in question and question["image_path"]:
+        messages[-1]["image_path"] = question["image_path"]
 
     # build arguments for api completions
     kwargs = settings | {
@@ -120,6 +128,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--setting-file", type=str, default="config/arena-hard-v2.0.yaml")
     parser.add_argument("--endpoint-file", type=str, default="config/api_config.yaml")
+    parser.add_argument(
+        "--max-samples", type=int, default=None, help="Maximum number of samples to process (limits to first N samples)"
+    )
     args = parser.parse_args()
     print(args)
 
@@ -132,6 +143,11 @@ if __name__ == "__main__":
     answer_dir = os.path.join("data", configs["bench_name"], "model_answer")
 
     questions = load_questions(question_file)
+    
+    if args.max_samples is not None:
+        questions = questions[:args.max_samples]
+        print(f"Limited to first {args.max_samples} samples")
+
     model_answers = load_model_answers(answer_dir)
     
     # if user choose a set of models, only judge those models
