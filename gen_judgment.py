@@ -54,6 +54,8 @@ def pairwise_judgment(question, baseline, answer, reference, configs, settings):
     ]
     
     if "image_url" in question and question["image_url"]:
+        assert len(messages) > 1, messages
+        assert messages[-1]["role"] == "user", messages
         messages[-1]["image_url"] = question["image_url"]
     
     if "image_path" in question and question["image_path"]:
