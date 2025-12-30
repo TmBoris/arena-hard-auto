@@ -1412,13 +1412,21 @@ def chat_completion_giga(model, messages, temperature, max_tokens, api_dict=None
             CLIENT = GigaChat()
     
     processed_messages = []
+
+    multimodal_mode = os.environ.get("GIGA_MULTIMODAL_MODE", "")
+    
     for message in messages:
         processed_message = message.copy()
 
-        if "image_path" in processed_message:     
-            image_path = processed_message.pop("image_path", None)
-            processed_message["files"] = []
-            processed_message["files"].append({"content": image_path})
+        if multimodal_mode == "upload":
+            processed_message.pop("file_url", None)
+
+        if "file_path" in processed_message:     
+            file_path = processed_message.pop("file_path", None)
+
+            if "files" not in processed_message:
+                processed_message["files"] = []
+            processed_message["files"].append({"content": file_path})
         
         processed_messages.append(processed_message)
 
