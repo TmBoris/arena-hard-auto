@@ -206,20 +206,21 @@ def chat_completion_openrouter(model, messages, temperature, max_tokens, api_dic
     for msg in messages:
         m = msg.copy()
         
-        file_url = m.pop("file_url", None)
         file_path = m.pop("file_path", None)
         
         text_content = m.get("content", "")
 
-        if not text_content and not file_url and not file_path:
-            print("skip %s because file_url and file_path is not provided" % m)
+        if not text_content and not file_path:
+            print("skip %s because file_path is not provided" % m)
             continue
 
-        if not os.path.exists(file_path) and file_path:
+        if file_path and not os.path.exists(file_path):
             print(f"Warning: File not found: {file_path}")
             continue
 
-        file_format = get_file_format(file_path)
+        if file_path:
+            file_format = get_file_format(file_path)
+
         assert file_path is not None and file_format, "Unknown format for file"
         
         content_parts = []
@@ -249,7 +250,7 @@ def chat_completion_openrouter(model, messages, temperature, max_tokens, api_dic
                     "url": data_uri
                 }
             })
-        else:
+        elif file_path:
             print(f"Warning: Unknown file format for file: {file_path}")
             continue
         
